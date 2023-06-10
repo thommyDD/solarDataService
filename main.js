@@ -32,13 +32,21 @@ axois.get(config.fronius.urls.flowRealtimeData, optionsUrls)
     solarData.powerAccu = solarDataTmp.Data.Site.P_Akku || 0;
     solarData.powerGrid = solarDataTmp.Data.Site.P_Grid || 0;
     solarData.powerLoad = solarDataTmp.Data.Site.P_Load || 0;
-    solarData.powerPv = solarData.Data.Site.P_PV || 0;
+    solarData.powerPv = solarDataTmp.Data.Site.P_PV || 0;
     solarData.soc = solarDataTmp.Data.Inverters[1].SOC || 0;
 
     // console.log(solarData);
 })
 .then(fetchData => {
     console.log(fetchData);
+
+    const url = `http://${config.ccu.ip}:${config.ccu.port}/sysvar/${config.ccu.sysvars['SoC PV-Speicher']}/~pv`;
+
+    axois.put(url, {"v": solarData.soc})
+    .then(() => {
+        console.log(`Daten an die CCU übermittelt`);
+    })
+    .catch(e => console.error(e));
 })
 .catch(e => {
     console.error(e)
