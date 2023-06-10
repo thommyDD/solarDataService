@@ -1,0 +1,17 @@
+{
+    "isValidConfig": false,
+    "requestIntervall": 60,
+    "fronius": {
+        "ip": "IP_ZUM_WECHSELRICHTER",
+        "urls": {
+            "flowRealtimeData": "http://IP_ZUM_WECHSELRICHTER/solar_api/v1/GetPowerFlowRealtimeData.fcgi"
+        }
+    },
+    "ccu": {
+        "ip": "IP_ZUR_CCU",
+        "port": "2121",
+        "sysvars": {
+            "soc": "ID_DER_VARIABLEN"
+        }
+    }
+}

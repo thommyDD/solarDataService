@@ -1,5 +1,31 @@
 'use strict'
 
+/*
+
+    Modul als Service unter Linux einrichten:
+
+    1. Datei unter /etc/systemd/system/NAME_DES_SERVICE.service erstellen (sudo)
+
+    [Unit]
+    Description=Beschreibung des Services
+    After=Start, nachdem bestimmte Dienste geladen sind z.B. network.target
+    
+    [Service]
+    Type=simple
+    Restart=Wann soll der Service neu gestartet werden? z.B. nach einem Fehler: on-failure
+    RestartSec=Zeit bis zum Restart in Sekunden
+    User=Nutzer, als welcher der Dienst ausgeführt werden soll
+    ExecStart=Ziel zur ausführenbaren Datei --> PFAD_ZU_NODE PFAD_ZUM_SCRIPT
+
+    [Install]
+    WantedBy=multi-user.target
+
+    Um den Service in den Autostart zu bringen:
+    1. sudo systemctl enable SERVICENAME
+    2. sudo systemctl daemon-reload
+
+*/
+
 import config from './config.json' assert {type: 'json'};
 import axois from 'axios';
 
@@ -13,7 +39,8 @@ let solarData = {
 
 async function main() {
     
-    if (!config.fronius || !config.ccu) return console.error(`Keine Konfigurationsdatei gefunden oder Konfiguration unvollständig!\nAbbruch!`)
+    if (!config.isValidConfig) return console.error(`Keine Konfigurationsdatei gefunden oder Konfiguration unvollständig!\nAbbruch!`)
+    if (config.fronius.ip === 'IP_ZUM_WECHSELRICHTER' || config.ccu.ip === 'IP_ZUR_CCU') return console.error(`Konfiguration unvollständig!\nAbbruch!`)
 
     const optionsUrls = {
         optionsUrlPV: {
@@ -45,7 +72,7 @@ async function main() {
         })
         .then(fetchData => {
 
-            const url = `http://${config.ccu.ip}:${config.ccu.port}/sysvar/${config.ccu.sysvars['SoC PV-Speicher']}/~pv`;
+            const url = `http://${config.ccu.ip}:${config.ccu.port}/sysvar/${config.ccu.sysvars.soc}/~pv`;
 
             axois.put(url, {"v": solarData.soc})
             .then(() => {
