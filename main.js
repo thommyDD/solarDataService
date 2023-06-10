@@ -11,6 +11,8 @@ let solarData = {
     "powerLoad": 0
 }
 
+if (!config.fronius || !config.ccu) return console.error(`Keine Konfigurationsdatei gefunden!\nAbbruch!`)
+
 const optionsUrls = {
     optionsUrlPV: {
         method: 'GET',
@@ -19,15 +21,25 @@ const optionsUrls = {
             'Accept': 'application/json',
             'Content-Type': 'application/json;charset=UTF-8'
         }
-    }
+    },
 }
-
-if (!config) return console.error(`Keine Konfigurationsdatei gefunden!\nAbbruch!`)
 
 axois.get(config.fronius.urls.flowRealtimeData, optionsUrls)
 .then(data => {
-    console.log(data)
+    
+    let solarDataTmp = data.data.Body;
+
+    solarData.powerAccu = solarDataTmp.Data.Site.P_Akku || 0;
+    solarData.powerGrid = solarDataTmp.Data.Site.P_Grid || 0;
+    solarData.powerLoad = solarDataTmp.Data.Site.P_Load || 0;
+    solarData.powerPv = solarData.Data.Site.P_PV || 0;
+    solarData.soc = solarDataTmp.Data.Inverters[1].SOC || 0;
+
+    // console.log(solarData);
 })
-.error(e => {
+.then(fetchData => {
+    console.log(fetchData);
+})
+.catch(e => {
     console.error(e)
 })
